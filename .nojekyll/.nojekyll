@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能体知识训练题</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', system-ui, sans-serif;
+    background: #f1f4f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .quiz-header {
+    width: 100%;
+    text-align: center;
+    padding: 18px 0 12px;
+    background: rgba(0,0,0,0.02);
+    border-bottom: 2px solid #4f46e5;
+    margin-bottom: 25px;
+  }
+  .quiz-header .main-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(to right, #4338ca, #6366f1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 3px;
+  }
+  .container {
+    width: 100%;
+    max-width: 720px;
+    background: white;
+    border-radius: 28px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+    padding: 2rem;
+    margin: 0 16px 30px;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .q-counter {
+    background: #eef2ff;
+    padding: 0.4rem 1.1rem;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #4f46e5;
+  }
+  .type-badge {
+    display: inline-block;
+    padding: 0.35rem 1.1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .type-badge.single { background: #e0e7ff; color: #4338ca; }
+  .type-badge.multi  { background: #fce7f3; color: #be185d; }
+  .type-badge.fill   { background: #d1fae5; color: #065f46; }
+
+  .question-text {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin: 0.8rem 0 2rem;
+    line-height: 1.7;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin-bottom: 1.8rem;
+  }
+  .option {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1rem 1.3rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    user-select: none;
+  }
+  .option:hover { background: #f1f5f9; border-color: #cbd5e1; }
+  .option.correct { background: #dcfce7; border-color: #22c55e; color: #166534; }
+  .option.wrong   { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
+  .option.disabled { pointer-events: none; }
+  .option input[type="checkbox"] { accent-color: #4f46e5; transform: scale(1.15); margin-right: 0.2rem; }
+
+  .fill-area {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .fill-area input {
+    flex: 1 1 200px;
+    padding: 0.9rem 1.3rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    font-size: 1rem;
+    outline: none;
+  }
+  .fill-area input:focus { border-color: #6366f1; }
+  .fill-area input.correct { border-color: #22c55e; background: #f0fdf4; }
+  .fill-area input.wrong   { border-color: #ef4444; background: #fef2f2; }
+
+  .submit-btn, .nav-btn {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 0.8rem 1.6rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .nav-container { display: flex; justify-content: space-between; margin-top: 2rem; }
+  .nav-btn { background: #e2e8f0; color: #1e293b; min-width: 110px; }
+  .nav-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .feedback { text-align: center; font-weight: 700; font-size: 1.1rem; margin: 1rem 0 0.2rem; min-height: 2rem; }
+
+  /* 成绩面板样式 */
+  .result-panel {
+    text-align: center;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 20px;
+    margin-top: 1.5rem;
+  }
+  .result-panel h3 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+  .result-panel .score { font-size: 3rem; font-weight: 800; color: #4f46e5; }
+  .result-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 1.5rem;
+    text-align: left;
+  }
+  .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.95rem;
+  }
+  .result-item .status { font-weight: 700; font-size: 1.2rem; }
+  .result-item .status.correct { color: #16a34a; }
+  .result-item .status.wrong { color: #dc2626; }
+  .result-item .status.unanswered { color: #94a3b8; }
+  .view-score-btn {
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 0.8rem 2rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    font-size: 1rem;
+  }
+</style>
+</head>
+<body>
+  <div class="quiz-header">
+    <h1 class="main-title">📚 智能体知识训练题</h1>
+  </div>
+
+  <div class="container" id="quizContainer">
+    <div class="header">
+      <span class="q-counter" id="qCounter">1 / 35</s
